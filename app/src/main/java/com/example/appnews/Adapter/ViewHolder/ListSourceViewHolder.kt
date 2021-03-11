@@ -16,7 +16,6 @@ class ListSourceViewHolder(itemView: View):RecyclerView.ViewHolder(itemView),
         itemView.setOnClickListener(this)
     }
 
-
     fun setItemClickListener(
         itemClickListener:ItemClickListener
     ){
