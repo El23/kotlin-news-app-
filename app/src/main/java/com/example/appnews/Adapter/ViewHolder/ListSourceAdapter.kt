@@ -1,12 +1,14 @@
 package com.example.appnews.Adapter.ViewHolder
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.appnews.Interface.ItemClickListener
+import com.example.appnews.ListNews
 import com.example.appnews.Model.WebSite
 import com.example.appnews.R
 
@@ -31,7 +33,10 @@ class ListSourceAdapter (private val context: Context,private val webSite: WebSi
         holder!!.source_title.text = webSite.articles!![position].title
         holder.setItemClickListener(object :ItemClickListener{
             override fun onClick(view: View, position: Int) {
-                Toast.makeText(context, "///", Toast.LENGTH_LONG).show()
+
+                var intent = Intent (context,ListNews::class.java)
+                intent.putExtra("source",webSite.status!![position].dec())
+                context.startActivity(intent)
             }
         })
     }
