@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var layoutManager: LinearLayoutManager
     lateinit var mService: NewsService
     lateinit var adapter: ListSourceAdapter
-    lateinit var dialog:AlertDialog
+    lateinit var dialog: AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,41 +43,62 @@ class MainActivity : AppCompatActivity() {
 
 
         loadWebSiteSource(false)
-//        dialog = SpotsDialog(this)
+//        dialog = SpotsDialog()
+        val dialog: AlertDialog = SpotsDialog.Builder().setContext(this).build()
 
     }
-    private fun loadWebSiteSource(isRefresh:Boolean){
 
-        if (!isRefresh){
+    private fun loadWebSiteSource(isRefresh: Boolean) {
+
+        if (!isRefresh) {
             val cashe = Paper.book().read<String>("cache")
-            if (cashe!=null && !cashe.isBlank()&&cashe!="null"){
+            if (cashe != null && !cashe.isBlank() && cashe != "null") {
                 //read
-                val  webSite = Gson().fromJson<WebSite>(cashe,WebSite::class.java)
+                val webSite = Gson().fromJson<WebSite>(cashe, WebSite::class.java)
                 adapter.notifyDataSetChanged()
                 recycler_view_news.adapter = adapter
-            }else{
+            } else {
                 //load and write
                 dialog.show()
 
-                mService.sources.enqueue(object :retrofit2.Callback<WebSite>{
+                mService.sources.enqueue(object : retrofit2.Callback<WebSite> {
+
+
                     override fun onResponse(call: Call<WebSite>, response: Response<WebSite>) {
 
-                        adapter= ListSourceAdapter(baseContext,response.body()!!)
+                        adapter = ListSourceAdapter(baseContext, response.body()!!)
                         adapter.notifyDataSetChanged()
                         recycler_view_news.adapter = adapter
-
-
-
+                        Paper.book().write("cache", Gson().toJson(response!!.body()!!))
+                        dialog.dismiss()
                     }
 
                     override fun onFailure(call: Call<WebSite>, t: Throwable) {
 
-                        Toast.makeText(baseContext,"failed",Toast.LENGTH_SHORT).show()
-
-
                     }
+
                 })
             }
+        } else {
+            swipe_to_refresh.isRefreshing = true
+
+            mService.sources.enqueue(object : retrofit2.Callback<WebSite> {
+                override fun onFailure(call: Call<WebSite>, t: Throwable) {
+                    Toast.makeText(baseContext, "failed", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onResponse(call: Call<WebSite>, response: Response<WebSite>) {
+
+                    adapter = ListSourceAdapter(baseContext, response.body()!!)
+                    adapter.notifyDataSetChanged()
+                    recycler_view_news.adapter = adapter
+
+                    Paper.book().write("cache", Gson().toJson(response!!.body()!!))
+                    swipe_to_refresh.isRefreshing = false
+                }
+
+            })
         }
+
     }
 }
